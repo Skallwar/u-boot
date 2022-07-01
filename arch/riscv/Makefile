@@ -3,9 +3,14 @@
 # Copyright (C) 2017 Andes Technology Corporation.
 # Rick Chen, Andes Technology Corporation <rick@andestech.com>
 
+NEED_ZICSR_ZIFENCEI = $(shell test $$($(CC) -dumpversion | cut -f1 -d.) -ge 11 && echo y)
+
 ifeq ($(CONFIG_ARCH_RV64I),y)
 	ARCH_BASE = rv64im
 	ABI = lp64
+	ifeq ($(NEED_ZICSR_ZIFENCEI),y)
+		ARCH_ZICSR_ZIFENCEI = _zicsr_zifencei
+	endif
 endif
 ifeq ($(CONFIG_ARCH_RV32I),y)
 	ARCH_BASE = rv32im
@@ -24,7 +29,7 @@ ifeq ($(CONFIG_CMODEL_MEDANY),y)
 	CMODEL = medany
 endif
 
-ARCH_FLAGS = -march=$(ARCH_BASE)$(ARCH_A)$(ARCH_C) -mabi=$(ABI) \
+ARCH_FLAGS = -march=$(ARCH_BASE)$(ARCH_A)$(ARCH_C)$(ARCH_ZICSR_ZIFENCEI) -mabi=$(ABI) \
 	     -mcmodel=$(CMODEL)
 
 PLATFORM_CPPFLAGS	+= $(ARCH_FLAGS)
